@@ -148,6 +148,8 @@ const POS={PG:'#4FC3F7',SG:'#34F5C5',G:'#7ED0F7',SF:'#F4A23B',PF:'#FF7A8A',F:'#F
 const posCol=p=>POS[p]||'#9AA6CC';
 const $=id=>document.getElementById(id);
 const STATS='https://ringchaser-stats.jordan-237.workers.dev';
+/* Mini-game -> Sleeper app analytics bridge. No-op outside the in-app WebView; never throws. See mini_game_bridge.ts. */
+function logToApp(props){try{var b=(typeof window!=='undefined')&&window.ReactNativeWebView;if(!b)return;b.postMessage(JSON.stringify({msgType:'mini_game_event',props:props}));}catch(_){}}
 function track(e,x){try{const q=new URLSearchParams(Object.assign({e:e},x||{})).toString();const u=STATS+'/v2track?'+q;if(navigator.sendBeacon){navigator.sendBeacon(u);}else{fetch(u,{mode:'no-cors',keepalive:true}).catch(function(){});}}catch(_){}}
 const seasonStr=y=>(y-1)+'–'+y;
 const shortYr=y=>"'"+String(y-1).slice(2)+"–'"+String(y).slice(2);
@@ -243,7 +245,7 @@ function start(){S.picks=new Array(9).fill(null);S.cur=null;S.used=new Set();S.s
 $('landing').classList.add('hidden');$('game').classList.remove('hidden');$('resultView').classList.add('hidden');$('play').classList.remove('hidden');
 $('reroll').classList.add('hidden');$('roll').classList.remove('hidden');$('pool').classList.add('hidden');
 $('pTeam').textContent='—';$('pYear').textContent='—';$('rnd').textContent='1';renderRoster();window.scrollTo({top:0,behavior:'smooth'});}
-$('startBtn').onclick=start;
+$('startBtn').onclick=()=>{logToApp({action:'roll_team_clicked'});start();};
 function renderShareCard(){
 const R=S.lastResult||{yc:0,oc:0,win:false,tie:false,grade:'',gcolor:'#EAF0FF'};
 const logo=(document.querySelector('.slkimg')||{}).src||'';
@@ -259,9 +261,9 @@ $('shareCard').innerHTML='<div class="sc-head"><div class="sc-brand">Ring<b>Chas
 '<div class="sc-team">'+rows+'</div>'+
 '<div class="sc-foot">'+(logo?'<img class="sc-logo" src="'+logo+'"/>':'<b>sleeper</b>')+'<span class="sc-url">ringchaser.sleeper.com</span></div>';
 }
-$('shareBtn').onclick=()=>{renderShareCard();$('shareOv').classList.remove('hidden');window.scrollTo({top:0});};
+$('shareBtn').onclick=()=>{logToApp({action:'share_team_clicked'});renderShareCard();$('shareOv').classList.remove('hidden');window.scrollTo({top:0});};
 $('shareClose').onclick=()=>$('shareOv').classList.add('hidden');
-$('again').onclick=()=>{$('resultView').classList.add('hidden');$('game').classList.add('hidden');$('landing').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});};
+$('again').onclick=()=>{logToApp({action:'play_again_clicked'});$('resultView').classList.add('hidden');$('game').classList.add('hidden');$('landing').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});};
 $('roll').onclick=()=>roll();
 $('reroll').onclick=()=>{if(S.rerollsLeft<=0||spinning)return;const idx=filled();S.rerollsLeft--;S.rdepth[idx]=(S.rdepth[idx]||0)+1;roll();};
 </script></body></html>
